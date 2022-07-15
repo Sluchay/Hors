@@ -1,0 +1,59 @@
+vkToken = 'vk1.a.65oEOT9SZINbKE-Kw9pEKYssbkzv--FDo0BTSOE6V4vbaHNXx5s2_zgdzg1XIceqPrFDXr2-VwuVsMZlSO5YQe7TEuFz4ZGKGk4ObzRHhhWow9Hwp0HwyyhLcaBqkQGSnLbpiuWpJtiX25c234sL22ZAQ5fuK_Ij6A5Jaksk3mJwbGsLEH7t4DY-NjT5PMZ0';
+
+function onOpen() {
+  SpreadsheetApp.getUi()
+  .createMenu('VK')
+  .addItem('Заполнить из группы VK', 'chooseGroup')
+  .addToUi();
+}
+
+function chooseGroup() {
+  var ui = SpreadsheetApp.getUi();
+  var idResponse = ui.prompt('Введите ID группы');
+  var groupId = idResponse.getResponseText();
+  var countResponse = ui.prompt('Введите количество постов');
+  var count = countResponse.getResponseText();
+
+  queryVkGroupPosts(groupId, count)
+}
+
+function queryVkGroupPosts (groupId = '1', count = 10) {
+  var apiUrl = 'https://api.vk.com/method/wall.get?owner_id=-' + groupId + '&count=' + count + '&access_token=' + vkToken + '&v=5.131';
+  var html = UrlFetchApp.fetch(apiUrl);
+  var json = JSON.parse(html);
+  var itemsArray = json.response.items;
+
+  for (var i = 0; i < itemsArray.length; i++) {
+    var rowData = {
+      id: itemsArray[i].id,
+      date: new Date(itemsArray[i].date).toLocaleString(),
+      text: itemsArray[i].text
+    }
+    if (itemsArray[i].attachments && 
+        itemsArray[i].attachments[0] && 
+        itemsArray[i].attachments[0].type === 'photo' && 
+        itemsArray[i].attachments[0].photo.sizes) {
+      var sizesArray = itemsArray[i].attachments[0].photo.sizes
+      var photoData = sizesArray.filter(i => i.type === 'x');
+      rowData.imageUrl = photoData[0].url;
+    }
+    addNewRow(rowData)
+  }
+}
+
+function addNewRow (data) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  var newRowNum = sheet.getLastRow() + 1;
+
+  sheet.getRange("A" + newRowNum).setValue(data.id);
+  sheet.getRange("B" + newRowNum).setValue(data.date);
+  sheet.getRange("C" + newRowNum).setValue(data.text);
+
+  if (data.imageUrl) {
+    var img = SpreadsheetApp.newCellImage()
+    .setSourceUrl(data.imageUrl)
+    .build();
+    
+    sheet.getRange("D" + newRowNum).setValue(img);
+  }
+}
