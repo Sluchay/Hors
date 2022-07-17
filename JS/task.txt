@@ -1,4 +1,4 @@
-vkToken = 'vk1.a.65oEOT9SZINbKE-Kw9pEKYssbkzv--FDo0BTSOE6V4vbaHNXx5s2_zgdzg1XIceqPrFDXr2-VwuVsMZlSO5YQe7TEuFz4ZGKGk4ObzRHhhWow9Hwp0HwyyhLcaBqkQGSnLbpiuWpJtiX25c234sL22ZAQ5fuK_Ij6A5Jaksk3mJwbGsLEH7t4DY-NjT5PMZ0';
+vkToken = 'token';
 
 function onOpen() {
   SpreadsheetApp.getUi()
